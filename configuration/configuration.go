@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
-	_ "github.com/go-sql-driver/mysql" // _ permite usar funciones del paquete sin pone mysql.Func()
+	_"github.com/go-sql-driver/mysql" // _ permite usar funciones del paquete sin pone mysql.Func()
 )
 
 type Configuration struct{
@@ -17,7 +17,8 @@ type Configuration struct{
 	Database string 
 }
 
-func getConfiguration() Configuration{
+// Se le pone mayuscula para hacerla exportable
+func GetConfiguration() Configuration{
 	var c Configuration
 	file, err := os.Open("./config.json")
 
@@ -31,8 +32,8 @@ func getConfiguration() Configuration{
 	return c
 }
 
-func getConection() *gorm.DB{
-	c := getConfiguration()
+func GetConection() *gorm.DB{
+	c := GetConfiguration()
 	// user:password@tcp(server:port)/database_name?charset=utf8&parseTime=True&loc=Local
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", 
 						c.User, c.Password, c.Server, c.Port, c.Database)

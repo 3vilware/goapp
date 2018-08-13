@@ -1,3 +1,3 @@
 # goapp
 
-#Nuevo archivo agregado: .gitignore
+Se crean las migraciones y se completan.
