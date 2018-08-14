@@ -1,9 +1,13 @@
 package main
 
 import (
+	"net/http"
 	"log"
 	"flag"
 	"github.com/goapp/migration"
+	"github.com/goapp/routes"
+	"github.com/urfave/negroni"
+
 )
 
 func main(){
@@ -16,4 +20,22 @@ func main(){
 		migration.Migrate()
 		log.Printf("Migracion Terminada  [OK]\n")
 	}
+
+	// inicia las rutas
+	router := routes.InitRoutes()
+
+	// inicia middlewares
+	n := negroni.Classic()
+	n.UseHandler(router)
+
+	// iniciamos servidor
+	server := &http.Server{
+		Addr: ":8080",
+		Handler: n,
+	}
+
+	log.Println("Iniciando servidor en 8080")
+	log.Println(server.ListenAndServe())
+	log.Println("Finalizo la ejecucion del servidor")
+
 }
