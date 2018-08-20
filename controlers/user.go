@@ -8,13 +8,13 @@ import(
 	"github.com/goapp/commons"
 	"encoding/json"
 	"crypto/sha256"
-	"encoding/base64"
+	// "encoding/base64"
 	"crypto/md5"
 	"log"
 )
 
 //Login es el controlador del login
-func Login(w http.ResponseWriter, r *http.Request){
+func Login(w http.ResponseWriter, r *http.Request) {
 	user := models.User{}
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
@@ -26,27 +26,27 @@ func Login(w http.ResponseWriter, r *http.Request){
 	defer db.Close()
 
 	c := sha256.Sum256([]byte(user.Password))
-	pwd := base64.URLEncoding.EncodeToString(c[:32]) // leer del inicio a la posicion 32
+	pwd := fmt.Sprintf("%x", c)
 
-	db.Where("email = ? and password = ?", user.Email, pwd).First(&user) // User ya tiene pass & email pero con el puntero la rellena
+	db.Where("email = ? and password = ?", user.Email, pwd).First(&user)
+	log.Println(user.ID, pwd)
 	if user.ID > 0 {
-		user.Password = "" //si se encontro algo pass va en blanco para que no lo devuelva en el json
+		user.Password = ""
 		token := commons.GenerateJWT(user)
+
 		j, err := json.Marshal(models.Token{Token: token})
 		if err != nil {
-			log.Fatalf("Error al convertir token a json: %s", err)
+			log.Fatalf("Error al convertir el token a json: %s", err)
 		}
-
 		w.WriteHeader(http.StatusOK)
 		w.Write(j)
-	}else{
+	} else {
 		m := models.Message{
-			Message: "Usuario o contraseña no válidos",
-			Code: http.StatusUnauthorized,
+			Message: "Usuario o clave no válido",
+			Code:    http.StatusUnauthorized,
 		}
 		commons.DisplayMessage(w, m)
 	}
-
 }
 
 // UserCreate permite registrar un usuario
