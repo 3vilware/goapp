@@ -1,13 +1,15 @@
 package controlers
 
-import(
-	"net/http"
-	"github.com/goapp/models"
-	"fmt"
-	"github.com/goapp/configuration"
-	"github.com/goapp/commons"
-	"encoding/json"
+import (
 	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+	"net/http"
+
+	"github.com/goapp/commons"
+	"github.com/goapp/configuration"
+	"github.com/goapp/models"
+
 	// "encoding/base64"
 	"crypto/md5"
 	"log"
@@ -32,12 +34,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	log.Println(user.ID, pwd)
 	if user.ID > 0 {
 		user.Password = ""
+		user.ConfirmPassword = ""
 		token := commons.GenerateJWT(user)
 
 		j, err := json.Marshal(models.Token{Token: token})
 		if err != nil {
 			log.Fatalf("Error al convertir el token a json: %s", err)
 		}
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 		w.Write(j)
 	} else {
@@ -50,19 +54,19 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 // UserCreate permite registrar un usuario
-func UserCreate(w http.ResponseWriter, r *http.Request){
+func UserCreate(w http.ResponseWriter, r *http.Request) {
 	user := models.User{}
 	m := models.Message{}
 
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		m.Message = fmt.Sprintf("Error al leer el usuario: %s",err)
+		m.Message = fmt.Sprintf("Error al leer el usuario: %s", err)
 		m.Code = http.StatusBadRequest
 		commons.DisplayMessage(w, m)
 		return //paramos con esto siempre
 	}
 
-	if user.Password != user.ConfirmPassword{
+	if user.Password != user.ConfirmPassword {
 		m.Message = "Las contraseñas no coinciden"
 		m.Code = http.StatusBadRequest
 		commons.DisplayMessage(w, m)
@@ -84,10 +88,10 @@ func UserCreate(w http.ResponseWriter, r *http.Request){
 	err = db.Create(&user).Error
 
 	if err != nil {
-		m.Message = fmt.Sprintf("Error al crear registro: %s",err)
+		m.Message = fmt.Sprintf("Error al crear registro: %s", err)
 		m.Code = http.StatusBadRequest
 		commons.DisplayMessage(w, m)
-		return 
+		return
 	}
 
 	m.Message = "Usuario creado con éxito!"
